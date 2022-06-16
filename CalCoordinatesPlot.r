@@ -50,7 +50,7 @@ find.xy <- function(dataframe, idx, idy){
   return(result)
 }
 
-rect.cent <- function(x, y, w, h){
+rect.cent <- function(x, y, w, h, border = 1, lwd = 1){
   if(length(h) != 1 | length(w) != 1){
     stop("height and width need to be single number")
   }
@@ -59,7 +59,7 @@ rect.cent <- function(x, y, w, h){
   result.y1 <- y - h/2
   result.y2 <- y + h/2
   
-  rect(result.x1, result.y1, result.x2, result.y2)
+  rect(result.x1, result.y1, result.x2, result.y2, border= border, lwd = lwd)
 }
 
 
@@ -142,25 +142,25 @@ for (i_x in 1:grid.ncol - 1) { # セルNoのx方向の番号 1:grid.ncol
     i_quad <- (i_cell - 1) * 8 + 1 
     
     # 各コドラートの座標を計算
-    # 外周のコドラートのx座標
+    # 外周のコドラートのx座標（緯度）
     quad.coord$lat[i_quad] <- (1-quad.rate) * i_x1 + quad.rate * i_x2
     quad.coord$lat[i_quad + 1] <- (1 - quad.rate) * i_x1 + quad.rate * i_x2
     quad.coord$lat[i_quad + 2] <- quad.rate * i_x1 + (1 - quad.rate) * i_x2
     quad.coord$lat[i_quad + 3] <- quad.rate * i_x1 + (1 - quad.rate) * i_x2
     
-    # 内周のコドラートのx座標
+    # 内周のコドラートのx座標（緯度）
     quad.coord$lat[i_quad + 4] <- (1-quad.rate.in) * i_x1 + quad.rate.in * i_x2
     quad.coord$lat[i_quad + 5] <- (1 - quad.rate.in) * i_x1 + quad.rate.in * i_x2
     quad.coord$lat[i_quad + 6] <- quad.rate.in * i_x1 + (1 - quad.rate.in) * i_x2
     quad.coord$lat[i_quad + 7] <- quad.rate.in * i_x1 + (1 - quad.rate.in) * i_x2
     
-    # 外周のコドラートのy座標
+    # 外周のコドラートのy座標（経度）
     quad.coord$lon[i_quad] <- (1-quad.rate) * i_y1 + quad.rate * i_y3
     quad.coord$lon[i_quad + 1] <- quad.rate * i_y1 + (1 - quad.rate) * i_y3
     quad.coord$lon[i_quad + 2] <- (1 - quad.rate) * i_y1 + quad.rate * i_y3
     quad.coord$lon[i_quad + 3] <- quad.rate * i_y1 + (1 - quad.rate) * i_y3
     
-    # 内周のコドラートのy座標
+    # 内周のコドラートのy座標（経度）
     quad.coord$lon[i_quad + 4] <- (1-quad.rate.in) * i_y1 + quad.rate.in * i_y3
     quad.coord$lon[i_quad + 5] <- quad.rate.in * i_y1 + (1 - quad.rate.in) * i_y3
     quad.coord$lon[i_quad + 6] <- (1 - quad.rate.in) * i_y1 + quad.rate.in * i_y3
@@ -191,6 +191,31 @@ grid.dist.coord.y <- (max(grid.coord$y) - min(grid.coord$y)) / grid.ncol
 points(ref.coord[2],ref.coord[1],col=3,pch=23,bg=3,cex=1.2)
 text(rep(min(grid.coord$y),grid.ncol) - grid.dist.coord.x/2, seq(min(grid.coord$x),max(grid.coord$x),length=grid.ncol+1) + grid.dist.coord.x/2, c(1:grid.ncol,""))
 text(seq(min(grid.coord$y),max(grid.coord$y),length=grid.ncol+1) + grid.dist.coord.y/2, rep(min(grid.coord$x),grid.ncol) - grid.dist.coord.y/2, c(1:grid.ncol,""))
+
+# セル内コドラート配置図
+# acell <- cbind(c(grid.coord$y[find.xy(grid.coord,i_x,i_y)],
+#                  grid.coord$y[find.xy(grid.coord,i_x+1,i_y)],
+#                  grid.coord$y[find.xy(grid.coord,i_x,i_y+1)],
+#                  grid.coord$y[find.xy(grid.coord,i_x+1,i_y+1)]),
+#                c(grid.coord$x[find.xy(grid.coord,i_x,i_y)],
+#                  grid.coord$x[find.xy(grid.coord,i_x+1,i_y)],
+#                  grid.coord$x[find.xy(grid.coord,i_x,i_y+1)],
+#                  grid.coord$x[find.xy(grid.coord,i_x+1,i_y+1)]))
+# 
+# plot(acell,xlab = "longitude",ylab = "latitude",cex.lab=1.5,pch=21,bg=1
+#      ,xaxt = "n",yaxt = "n",)
+# points(quad.coord[i_quad:(i_quad + 7),"lon"],quad.coord[i_quad:(i_quad + 7),"lat"],pch=21,col=2,bg=2)
+# text(quad.coord[i_quad:(i_quad + 7),"lon"],quad.coord[i_quad:(i_quad + 7),"lat"],1:8,cex=1.5)
+# rect(acell[1,1],acell[1,2],acell[4,1],acell[4,2])
+# lines(acell[c(1,4),1],acell[c(1,4),2])
+# lines(acell[c(2,3),1],acell[c(2,3),2])
+# abline(h = (acell[1,2] + acell[4,2])/2)
+# abline(v = (acell[1,1] + acell[4,1])/2)
+# rect.cent(quad.coord[i_quad:(i_quad + 7),"lon"],quad.coord[i_quad:(i_quad + 7),"lat"],
+#           w = (max(grid.coord$y) - min(grid.coord$y)) * uav.h.range[1] / (grid.dist * grid.ncol),
+#           h = (max(grid.coord$x) - min(grid.coord$x)) * uav.h.range[2] / (grid.dist * grid.ncol),
+#           border=4, lwd = 1.5)
+
 
 # Divide files ------------------------------------------------------------
 min.x <- min(grid.coord$x) # 最も小さい緯度　（サイトの下端）
