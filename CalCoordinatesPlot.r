@@ -9,11 +9,12 @@ ref.loc <- 9 # 基準点の位置。下参照
 #     8
 
 # 分割数
-div.style <- 3 # 1: 短冊状(緯線に沿って横に), 2: 短冊状（経線に沿って縦に）, 3: 格子状
+div.style <- 2 # 1: 短冊状(緯線に沿って横に), 2: 短冊状（経線に沿って縦に）, 3: 格子状
 div.num <- 4 # 短冊状の場合は短冊の本数、格子状の場合は縦横それぞれの行数・列数
 
 # Init --------------------------------------------------------------------
-source("C:/Users/niedo/OneDrive/Documents/Rworks/Functions/createGPX.R")
+library(tcltk)
+source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/createGPX.R")
 wdpath <- "C:/Users/niedo/OneDrive/SL/2022/202206モンゴル調査/PreliminaryStudy/GPX"
 setwd(wdpath)
 
@@ -62,6 +63,15 @@ rect.cent <- function(x, y, w, h){
 }
 
 
+# sort and set lat and lon id ------------------------------------------------------
+grid.coord <- grid.coord[order(grid.coord$x),]
+grid.coord$idx <- rep(0:grid.ncol, each = grid.ncol + 1)
+grid.coord <- grid.coord[order(grid.coord$y),]
+grid.coord$idy <- rep(0:grid.ncol, each = grid.ncol + 1)
+grid.coord <- grid.coord[order(grid.coord$idx),]
+grid.coord <- grid.coord[order(grid.coord$idy),]
+rownames(grid.coord) <- 1:nrow(grid.coord)
+
 # Cal Drone scale ---------------------------------------------------------
 uav.h.range <- uav.range * uav.h / 100 
 
@@ -105,9 +115,11 @@ grid.coord$y <- grid.coord$y + shft[2]
 # Cal quad coordinates -----------------------------------------------------
 
 # test
-plot(grid.coord$y,grid.coord$x,cex = 0.4, col = 1,bg=1, pch = 21)
+plot(grid.coord$y,grid.coord$x,cex = 0.4, col = 1,bg=1, pch = 21,
+     xlab = "longitude, E", ylab = "latitude, N")
 
 
+pb <- txtProgressBar(min = 0, max=grid.ncol - 1, style = 3)
 for (i_x in 1:grid.ncol - 1) { # セルNoのx方向の番号 1:grid.ncol
   for (i_y in 1:grid.ncol - 1) { # セルNoのy方向の番号 1:grid.ncol
     # セルのNo 1:grid.ncol^2
@@ -156,54 +168,36 @@ for (i_x in 1:grid.ncol - 1) { # セルNoのx方向の番号 1:grid.ncol
     
     # コドラートのid設定
     quad.coord$id[i_quad:(i_quad + 7)] <- i_quad:(i_quad + 7)
-    # quad.coord$id[i_quad] <- i_quad 
-    # quad.coord$id[i_quad + 1] <- i_quad + 1
-    # quad.coord$id[i_quad + 2] <- i_quad + 2
-    # quad.coord$id[i_quad + 3] <- i_quad + 3
-    # quad.coord$id[i_quad + 4] <- i_quad + 4
-    # quad.coord$id[i_quad + 5] <- i_quad + 5
-    # quad.coord$id[i_quad + 6] <- i_quad + 6
-    # quad.coord$id[i_quad + 7] <- i_quad + 7
-    # 
+
     # コドラートの名称
-    quad.coord$name[i_quad:(i_quad + 7)] <- paste("lat",i_x,"lon",i_y,"_q",1:8,sep="")
-    # quad.coord$name[i_quad] <- paste(i_x,i_y,1,sep="_")
-    # quad.coord$name[i_quad + 1] <- paste(i_x,i_y,2,sep="_")
-    # quad.coord$name[i_quad + 2] <- paste(i_x,i_y,3,sep="_")
-    # quad.coord$name[i_quad + 3] <- paste(i_x,i_y,4,sep="_")
-    # quad.coord$name[i_quad + 4] <- paste(i_x,i_y,5,sep="_")
-    # quad.coord$name[i_quad + 5] <- paste(i_x,i_y,6,sep="_")
-    # quad.coord$name[i_quad + 6] <- paste(i_x,i_y,7,sep="_")
-    # quad.coord$name[i_quad + 7] <- paste(i_x,i_y,8,sep="_")
-    
+    quad.coord$name[i_quad:(i_quad + 7)] <- paste("N",i_x + 1,"E",i_y + 1,"p",1:8,sep="")
+
     # マーカー形状
-    quad.coord$sym[i_quad:(i_quad + 7)] <- "Flag, Red"
+    quad.coord$sym[i_quad:(i_quad + 7)] <- "City (Medium)"
     
-    # test
-    # plot(cbind(c(i_x1,i_x2,i_x3,i_x4),c(i_y1,i_y2,i_y3,i_y4)))
-    # points(quad.coord$x[1:8],quad.coord$y[1:8])
-    # 
-    # rect.cent(quad.coord$x[1:8],quad.coord$y[1:8],
-    #           (max(grid.coord$x) - min(grid.coord$x)) * uav.h.range[1] / (grid.dist * grid.ncol),
-    #           (max(grid.coord$y) - min(grid.coord$y)) * uav.h.range[2] / (grid.dist * grid.ncol))
-    # abline(h = (i_y1 + i_y4) / 2)
-    # abline(v = (i_x1 + i_x4) / 2)
-    rect(i_y1,i_x1,i_y4,i_x4)
+
+    rect(i_y1,i_x1,i_y4,i_x4) 
+    setTxtProgressBar(pb, i_x) 
   }
 }
 
 # 図の描画
-points(quad.coord$lon,quad.coord$lat, cex = 0.4, col = 2, bg=1 , pch = 21)
-rect.cent(quad.coord$lon,quad.coord$lat,
-          (max(grid.coord$y) - min(grid.coord$y)) * uav.h.range[2] / (grid.dist * grid.ncol),
-          (max(grid.coord$x) - min(grid.coord$x)) * uav.h.range[1] / (grid.dist * grid.ncol))
+grid.dist.coord.x <- (max(grid.coord$x) - min(grid.coord$x)) / grid.ncol
+grid.dist.coord.y <- (max(grid.coord$y) - min(grid.coord$y)) / grid.ncol
+# points(quad.coord$lon,quad.coord$lat, cex = 0.4, col = 2, bg=1 , pch = 21)
+# rect.cent(quad.coord$lon,quad.coord$lat,
+#           (max(grid.coord$y) - min(grid.coord$y)) * uav.h.range[2] / (grid.dist * grid.ncol),
+#           (max(grid.coord$x) - min(grid.coord$x)) * uav.h.range[1] / (grid.dist * grid.ncol))
 points(ref.coord[2],ref.coord[1],col=3,pch=23,bg=3,cex=1.2)
+text(rep(min(grid.coord$y),grid.ncol) - grid.dist.coord.x/2, seq(min(grid.coord$x),max(grid.coord$x),length=grid.ncol+1) + grid.dist.coord.x/2, c(1:grid.ncol,""))
+text(seq(min(grid.coord$y),max(grid.coord$y),length=grid.ncol+1) + grid.dist.coord.y/2, rep(min(grid.coord$x),grid.ncol) - grid.dist.coord.y/2, c(1:grid.ncol,""))
 
 # Divide files ------------------------------------------------------------
 min.x <- min(grid.coord$x) # 最も小さい緯度　（サイトの下端）
 min.y <- min(grid.coord$y) # 最も小さい軽度　（サイトの左端）
 div.dist.x <- grid.range[1] / div.num # 分割した場合の間隔
 div.dist.y <- grid.range[2] / div.num # 分割した場合の間隔
+pb <- txtProgressBar(min=1, max=div.num, style=3)
 if(div.style == 1){
   # 短冊状に横に分割する場合（緯線に並行）
   for (i_div_x in 1:div.num) {
@@ -213,8 +207,13 @@ if(div.style == 1){
            max(grid.coord$y),
            min.x + div.dist.x * i_div_x,
            border = 3, lwd = 1.5)
+      text((min.y + max(grid.coord$y))/2,
+           (min.x + div.dist.x * (i_div_x - 1) + min.x + div.dist.x * i_div_x)/2,
+           paste("lat",i_div_x,sep=""),
+           col=3,font=2,cex=1.5)
       write.csv(temp.quad.coord, file = paste(wdpath,"/lat",i_div_x,"quad_coordinate.csv",sep=""))
       write.gpx(temp.quad.coord, file = paste(wdpath,"/lat",i_div_x,"quad_coordinate.gpx",sep=""))
+      setTxtProgressBar(pb, i_div_x) 
   }
   
 }else if(div.style == 2){
@@ -226,8 +225,13 @@ if(div.style == 1){
          min.y + div.dist.y * i_div_y,
          max(grid.coord$x),
          border = 3, lwd = 1.5)
+    text((min.y + div.dist.y * (i_div_y - 1) + min.y + div.dist.y * i_div_y)/2,
+         (min.x + max(grid.coord$x))/2,
+         paste("lon",i_div_y,sep=""),
+         col=3,font=2,cex=1.5)
     write.csv(temp.quad.coord, file = paste(wdpath,"/lon",i_div_y,"quad_coordinate.csv",sep=""))
     write.gpx(temp.quad.coord, file = paste(wdpath,"/lon",i_div_y,"quad_coordinate.gpx",sep=""))
+    setTxtProgressBar(pb, i_div_y) 
   }
   
 }else if(div.style ==3){
@@ -241,8 +245,13 @@ if(div.style == 1){
            min.y + div.dist.y * i_div_y,
            min.x + div.dist.x * i_div_x,
            border = 3, lwd = 1.5)
+      text((min.y + div.dist.y * (i_div_y - 1) + min.y + div.dist.y * i_div_y)/2,
+           (min.x + div.dist.x * (i_div_x - 1) + min.x + div.dist.x * i_div_x)/2,
+           paste("lat",i_div_x,"_lon",i_div_y,sep=""),
+           col=3,font=2,cex=1.5)
       write.csv(temp.quad.coord, file = paste(wdpath,"/lat",i_div_x,"_lon",i_div_y,"quad_coordinate.csv",sep=""))
       write.gpx(temp.quad.coord, file = paste(wdpath,"/lat",i_div_x,"_lon",i_div_y,"quad_coordinate.gpx",sep=""))
+      setTxtProgressBar(pb, i_div_x) 
     }
   }
 }else {
