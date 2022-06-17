@@ -1,17 +1,17 @@
 # Parameter ---------------------------------------------------------------
 # 基準点座標
-ref.loc <- 9 # 基準点の位置。下参照
-#     4
-# 5┌─────┐3
-# 6│  1  │2
-# 7└─────┘9
-#     8
+# ref.loc <- 9 # 基準点の位置。下参照
+# #     4
+# # 5┌─────┐3
+# # 6│  1  │2
+# # 7└─────┘9
+# #     8
 
 # Init --------------------------------------------------------------------
 library(tcltk)
 source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/createGPX.R")
-wdpath <- "C:/Users/niedo/OneDrive/SL/2022/202206モンゴル調査/PreliminaryStudy/GPX"
-dronepath <- "C:/Users/niedo/OneDrive/SL/2022/202206モンゴル調査/PreliminaryStudy/kml"
+wdpath <- "C:/Users/niedo/OneDrive/SL/2022/202206MongoliaSurvey/PreliminaryStudy/GPX"
+dronepath <- "C:/Users/niedo/OneDrive/SL/2022/202206MongoliaSurvey/PreliminaryStudy/kml"
 # setwd(wdpath)
 
 # 基準点

@@ -2,9 +2,9 @@
 
 
 # Init --------------------------------------------------------------------
-# 分割数
-div.style <- 1 # 1: 短冊状(緯線に沿って横に), 2: 短冊状（経線に沿って縦に）, 3: 格子状
-div.num <- 1 # 短冊状の場合は短冊の本数、格子状の場合は縦横それぞれの行数・列数
+# # 分割数
+# div.style <- 1 # 1: 短冊状(緯線に沿って横に), 2: 短冊状（経線に沿って縦に）, 3: 格子状
+# div.num <- 1 # 短冊状の場合は短冊の本数、格子状の場合は縦横それぞれの行数・列数
 
 # Divide files ------------------------------------------------------------
 # データ読み込み
@@ -48,7 +48,7 @@ plot(grid.coordEQA$y,grid.coordEQA$x,cex = 0.4, col = 1,bg=1, pch = 21,
      xlab = "longitude, E", ylab = "latitude, N")
 
 # 分割
-pb <- txtProgressBar(min=1, max=div.num, style=3)
+pb <- txtProgressBar(min=0, max=div.num, style=3)
 if(div.style == 1){
   # 短冊状に横に分割する場合（緯線に並行）
   for (i_div_x in 1:div.num) {
