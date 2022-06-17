@@ -1,6 +1,5 @@
 # Parameter ---------------------------------------------------------------
 # 基準点座標
-ref.coord <- c(46.874073, 105.925902) # lat N, lon E
 ref.loc <- 9 # 基準点の位置。下参照
 #     4
 # 5┌─────┐3
@@ -8,17 +7,18 @@ ref.loc <- 9 # 基準点の位置。下参照
 # 7└─────┘9
 #     8
 
-# 分割数
-div.style <- 2 # 1: 短冊状(緯線に沿って横に), 2: 短冊状（経線に沿って縦に）, 3: 格子状
-div.num <- 4 # 短冊状の場合は短冊の本数、格子状の場合は縦横それぞれの行数・列数
-
 # Init --------------------------------------------------------------------
 library(tcltk)
 source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/createGPX.R")
 wdpath <- "C:/Users/niedo/OneDrive/SL/2022/202206モンゴル調査/PreliminaryStudy/GPX"
-setwd(wdpath)
+dronepath <- "C:/Users/niedo/OneDrive/SL/2022/202206モンゴル調査/PreliminaryStudy/kml"
+# setwd(wdpath)
 
-grid.coord <- read.csv("Grid240_ponits_coordinate.csv",header = T)
+# 基準点
+ref.coord <- as.vector(read.csv("RefPointUTM.csv",header = T)) # lat N, lon E
+
+# BUを中心としたグリッドの格子点座標データ
+grid.coord <- read.csv("Grid240_ponits_coordinateUTM.csv",header = T)
 grid.coord
 # plot(grid.coord$x,grid.coord$y)
 
@@ -50,6 +50,7 @@ find.xy <- function(dataframe, idx, idy){
   return(result)
 }
 
+# 中心を指定して長方形をplotする
 rect.cent <- function(x, y, w, h, border = 1, lwd = 1){
   if(length(h) != 1 | length(w) != 1){
     stop("height and width need to be single number")
@@ -89,7 +90,8 @@ quad.rate.in <- 0.5 - 2 * quad.rate + quad.rate # セルの斜辺に対して、
 grid.range <- c(max(grid.coord$x) - min(grid.coord$x),
                 max(grid.coord$y) - min(grid.coord$y))
 # 左下を0,0にする
-grid.coord$y <- grid.coord$y - 100.5112526
+grid.coord$x <- grid.coord$x - min(grid.coord$x)
+grid.coord$y <- grid.coord$y - min(grid.coord$y)
 #     4
 # 5┌─────┐3
 # 6│  1  │2
@@ -108,8 +110,8 @@ shft <- switch(ref.loc,
                stop("Please enter an integer (from 1 to 9) to reg.loc")
   
 )
-grid.coord$x <- grid.coord$x + shft[1]
-grid.coord$y <- grid.coord$y + shft[2]
+grid.coord$x <- grid.coord$x + as.numeric(shft[1])
+grid.coord$y <- grid.coord$y + as.numeric(shft[2])
 
 
 # Cal quad coordinates -----------------------------------------------------
@@ -181,6 +183,9 @@ for (i_x in 1:grid.ncol - 1) { # セルNoのx方向の番号 1:grid.ncol
   }
 }
 
+# サイト全体のコドラート位置ファイルを保存
+write.csv(quad.coord, file = paste(wdpath,"/quad_coordinateUTM.csv",sep=""))
+
 # 図の描画
 grid.dist.coord.x <- (max(grid.coord$x) - min(grid.coord$x)) / grid.ncol
 grid.dist.coord.y <- (max(grid.coord$y) - min(grid.coord$y)) / grid.ncol
@@ -192,98 +197,6 @@ points(ref.coord[2],ref.coord[1],col=3,pch=23,bg=3,cex=1.2)
 text(rep(min(grid.coord$y),grid.ncol) - grid.dist.coord.x/2, seq(min(grid.coord$x),max(grid.coord$x),length=grid.ncol+1) + grid.dist.coord.x/2, c(1:grid.ncol,""))
 text(seq(min(grid.coord$y),max(grid.coord$y),length=grid.ncol+1) + grid.dist.coord.y/2, rep(min(grid.coord$x),grid.ncol) - grid.dist.coord.y/2, c(1:grid.ncol,""))
 
-# セル内コドラート配置図
-# acell <- cbind(c(grid.coord$y[find.xy(grid.coord,i_x,i_y)],
-#                  grid.coord$y[find.xy(grid.coord,i_x+1,i_y)],
-#                  grid.coord$y[find.xy(grid.coord,i_x,i_y+1)],
-#                  grid.coord$y[find.xy(grid.coord,i_x+1,i_y+1)]),
-#                c(grid.coord$x[find.xy(grid.coord,i_x,i_y)],
-#                  grid.coord$x[find.xy(grid.coord,i_x+1,i_y)],
-#                  grid.coord$x[find.xy(grid.coord,i_x,i_y+1)],
-#                  grid.coord$x[find.xy(grid.coord,i_x+1,i_y+1)]))
-# 
-# plot(acell,xlab = "longitude",ylab = "latitude",cex.lab=1.5,pch=21,bg=1
-#      ,xaxt = "n",yaxt = "n",)
-# points(quad.coord[i_quad:(i_quad + 7),"lon"],quad.coord[i_quad:(i_quad + 7),"lat"],pch=21,col=2,bg=2)
-# text(quad.coord[i_quad:(i_quad + 7),"lon"],quad.coord[i_quad:(i_quad + 7),"lat"],1:8,cex=1.5)
-# rect(acell[1,1],acell[1,2],acell[4,1],acell[4,2])
-# lines(acell[c(1,4),1],acell[c(1,4),2])
-# lines(acell[c(2,3),1],acell[c(2,3),2])
-# abline(h = (acell[1,2] + acell[4,2])/2)
-# abline(v = (acell[1,1] + acell[4,1])/2)
-# rect.cent(quad.coord[i_quad:(i_quad + 7),"lon"],quad.coord[i_quad:(i_quad + 7),"lat"],
-#           w = (max(grid.coord$y) - min(grid.coord$y)) * uav.h.range[1] / (grid.dist * grid.ncol),
-#           h = (max(grid.coord$x) - min(grid.coord$x)) * uav.h.range[2] / (grid.dist * grid.ncol),
-#           border=4, lwd = 1.5)
-
-
-# Divide files ------------------------------------------------------------
-min.x <- min(grid.coord$x) # 最も小さい緯度　（サイトの下端）
-min.y <- min(grid.coord$y) # 最も小さい軽度　（サイトの左端）
-div.dist.x <- grid.range[1] / div.num # 分割した場合の間隔
-div.dist.y <- grid.range[2] / div.num # 分割した場合の間隔
-pb <- txtProgressBar(min=1, max=div.num, style=3)
-if(div.style == 1){
-  # 短冊状に横に分割する場合（緯線に並行）
-  for (i_div_x in 1:div.num) {
-      temp.quad.coord <- quad.coord[quad.coord$lat > min.x + div.dist.x * (i_div_x - 1) & quad.coord$lat < min.x + div.dist.x * i_div_x,]
-      rect(min.y,
-           min.x + div.dist.x * (i_div_x - 1),
-           max(grid.coord$y),
-           min.x + div.dist.x * i_div_x,
-           border = 3, lwd = 1.5)
-      text((min.y + max(grid.coord$y))/2,
-           (min.x + div.dist.x * (i_div_x - 1) + min.x + div.dist.x * i_div_x)/2,
-           paste("lat",i_div_x,sep=""),
-           col=3,font=2,cex=1.5)
-      write.csv(temp.quad.coord, file = paste(wdpath,"/lat",i_div_x,"quad_coordinate.csv",sep=""))
-      write.gpx(temp.quad.coord, file = paste(wdpath,"/lat",i_div_x,"quad_coordinate.gpx",sep=""))
-      setTxtProgressBar(pb, i_div_x) 
-  }
-  
-}else if(div.style == 2){
-  # 短冊状に縦に分割する場合(経線に並行)
-  for (i_div_y in 1:div.num) {
-    temp.quad.coord <- quad.coord[quad.coord$lon > min.y + div.dist.y * (i_div_y - 1) & quad.coord$lon < min.y + div.dist.y * i_div_y,]
-    rect(min.y + div.dist.y * (i_div_y - 1),
-         min.x,
-         min.y + div.dist.y * i_div_y,
-         max(grid.coord$x),
-         border = 3, lwd = 1.5)
-    text((min.y + div.dist.y * (i_div_y - 1) + min.y + div.dist.y * i_div_y)/2,
-         (min.x + max(grid.coord$x))/2,
-         paste("lon",i_div_y,sep=""),
-         col=3,font=2,cex=1.5)
-    write.csv(temp.quad.coord, file = paste(wdpath,"/lon",i_div_y,"quad_coordinate.csv",sep=""))
-    write.gpx(temp.quad.coord, file = paste(wdpath,"/lon",i_div_y,"quad_coordinate.gpx",sep=""))
-    setTxtProgressBar(pb, i_div_y) 
-  }
-  
-}else if(div.style ==3){
-  # 格子状に分割する場合
-  for (i_div_x in 1:div.num) {
-    for (i_div_y in 1:div.num) {
-      temp.quad.coord <- quad.coord[quad.coord$lat > min.x + div.dist.x * (i_div_x - 1) & quad.coord$lat < min.x + div.dist.x * i_div_x &
-                                      quad.coord$lon > min.y + div.dist.y * (i_div_y - 1) & quad.coord$lon < min.y + div.dist.y * i_div_y,]
-      rect(min.y + div.dist.y * (i_div_y - 1),
-           min.x + div.dist.x * (i_div_x - 1),
-           min.y + div.dist.y * i_div_y,
-           min.x + div.dist.x * i_div_x,
-           border = 3, lwd = 1.5)
-      text((min.y + div.dist.y * (i_div_y - 1) + min.y + div.dist.y * i_div_y)/2,
-           (min.x + div.dist.x * (i_div_x - 1) + min.x + div.dist.x * i_div_x)/2,
-           paste("lat",i_div_x,"_lon",i_div_y,sep=""),
-           col=3,font=2,cex=1.5)
-      write.csv(temp.quad.coord, file = paste(wdpath,"/lat",i_div_x,"_lon",i_div_y,"quad_coordinate.csv",sep=""))
-      write.gpx(temp.quad.coord, file = paste(wdpath,"/lat",i_div_x,"_lon",i_div_y,"quad_coordinate.gpx",sep=""))
-      setTxtProgressBar(pb, i_div_x) 
-    }
-  }
-}else {
-  stop("Please define div.style as an integer from 1 to 3")
-}
-
-paste("quad:",nrow(temp.quad.coord),", cells:",nrow(temp.quad.coord)/8 ,sep="")
 
 
 
