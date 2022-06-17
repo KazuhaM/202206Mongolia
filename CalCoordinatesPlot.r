@@ -33,8 +33,10 @@ uav.h <- 40 # ドローンの測定高
 uav.range <- c(165, 110) # ドローンの測定高100mのときの撮影範囲(m)
 
 # 結果格納用データフレーム
-quad.coord <- createEmptyDf(grid.ncol^2 * 8,
-                            5,c("id","lat","lon","name","sym"))
+quad.coord <- createEmptyDf(grid.ncol^2 * 8, 5,
+                            c("id","lat","lon","name","sym"))
+cent.coord <- createEmptyDf(grid.ncol^2, 4,
+                            c("id","lat","lon","name"))
 
 # Functions ---------------------------------------------------------------
 # あるデータフレームにおいて、x, yが特定の番号のときの行番取得
@@ -177,7 +179,13 @@ for (i_x in 1:grid.ncol - 1) { # セルNoのx方向の番号 1:grid.ncol
     # マーカー形状
     quad.coord$sym[i_quad:(i_quad + 7)] <- "City (Medium)"
     
-
+    # セルの中心の座標
+    cent.coord$id[i_cell] <- i_cell
+    cent.coord$lon[i_cell] <- (i_y1 + i_y4)/2
+    cent.coord$lat[i_cell] <- (i_x1 + i_x4)/2
+    cent.coord$name[i_cell] <- paste("lat", i_x + 1, "lon", i_y + 1, sep="")
+    
+    # セルの外周を描く
     rect(i_y1,i_x1,i_y4,i_x4) 
     setTxtProgressBar(pb, i_x) 
   }
@@ -185,6 +193,7 @@ for (i_x in 1:grid.ncol - 1) { # セルNoのx方向の番号 1:grid.ncol
 
 # サイト全体のコドラート位置ファイルを保存
 write.csv(quad.coord, file = paste(wdpath,"/quad_coordinateUTM.csv",sep=""))
+write.csv(cent.coord, file = paste(wdpath,"/cellCent_coordUTM.csv",sep=""),row.names=F)
 
 # 図の描画
 grid.dist.coord.x <- (max(grid.coord$x) - min(grid.coord$x)) / grid.ncol
@@ -196,7 +205,7 @@ grid.dist.coord.y <- (max(grid.coord$y) - min(grid.coord$y)) / grid.ncol
 points(ref.coord[2],ref.coord[1],col=3,pch=23,bg=3,cex=1.2)
 text(rep(min(grid.coord$y),grid.ncol) - grid.dist.coord.x/2, seq(min(grid.coord$x),max(grid.coord$x),length=grid.ncol+1) + grid.dist.coord.x/2, c(1:grid.ncol,""))
 text(seq(min(grid.coord$y),max(grid.coord$y),length=grid.ncol+1) + grid.dist.coord.y/2, rep(min(grid.coord$x),grid.ncol) - grid.dist.coord.y/2, c(1:grid.ncol,""))
-
+# points(cent.coord$lon,cent.coord$lat)
 
 
 

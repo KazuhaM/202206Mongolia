@@ -6,8 +6,8 @@ ref.loc <- 9 # 基準点の位置。下参照
 # 7└─────┘9
 #     8
 # 分割数
-div.style <- 1 # 1: 短冊状(緯線に沿って横に), 2: 短冊状（経線に沿って縦に）, 3: 格子状
-div.num <- 1 # 短冊状の場合は短冊の本数、格子状の場合は縦横それぞれの行数・列数
+div.style <- 3 # 1: 短冊状(緯線に沿って横に), 2: 短冊状（経線に沿って縦に）, 3: 格子状
+div.num <- 4 # 短冊状の場合は短冊の本数、格子状の場合は縦横それぞれの行数・列数
 
 # library
 library(reticulate)
@@ -47,7 +47,10 @@ source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/DivideFilesGPX.r
 print("complete to divede quadrat points in some files and make gpx files")
 
 # ドローンの飛行経路を座標を推定
-source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/QuadLoc_DroneWaypoints.r")
-reticulate::source_python(paste(py.path,"e_dronewaypoints_utm2eqa.py",sep=""))
+reticulate::source_python(paste(py.path,"e_dronecentpoints_utm2eqa.py",sep=""))
 print("complete to calculate route points of drone flight")
+
+# ドローンの飛行経路のテンプレート作成用のway point作成
+# source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/QuadLoc_DroneWaypoints.r")
+# reticulate::source_python(paste(py.path,"e_dronewaypoints_utm2eqa.py",sep=""))
 
