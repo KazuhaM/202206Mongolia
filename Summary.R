@@ -32,16 +32,22 @@ setwd(wdpath)
 
 # EQA to UTM ref point
 reticulate::source_python(paste(py.path,"e_oneeqa2utm.py",sep=""))
+print("complete to convert reference point from EQA to UTM")
+
 # 基準点とその相対位置によって格子点を移動
 source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/CalCoordinatesPlot.r")
+print("complete to shift grid points on the basis of reference points")
 
 # 格子点をUTMから座標に
 reticulate::source_python(paste(py.path,"e_someutm2eqa.py",sep=""))
+print("complete to convert grid points from UTM to EQA")
 
 # ファイルを分割
 source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/DivideFilesGPX.r")
+print("complete to divede quadrat points in some files and make gpx files")
 
 # ドローンの飛行経路を座標を推定
 source("C:/Users/niedo/OneDrive/Documents/Rworks/202206Mongolia/QuadLoc_DroneWaypoints.r")
 reticulate::source_python(paste(py.path,"e_dronewaypoints_utm2eqa.py",sep=""))
+print("complete to calculate route points of drone flight")
 
